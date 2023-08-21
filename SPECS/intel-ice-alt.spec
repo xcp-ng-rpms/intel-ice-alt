@@ -21,6 +21,8 @@ License: GPLv2
 # Extracted from latest XS driver disk
 Source0: intel-ice-1.8.8.tar.gz
 
+Patch1: 0001-Look-for-firmware-in-lib-firmware-override.patch
+
 BuildRequires: gcc
 BuildRequires: kernel-devel
 Provides: vendor-driver
@@ -44,7 +46,7 @@ version %{kernel_version}.
 # mark modules executable so that strip-to-file can strip them
 find %{buildroot}/lib/modules/%{kernel_version} -name "*.ko" -type f | xargs chmod u+x
 
-DDP_PKG_DEST_PATH=%{buildroot}/lib/firmware/updates/%{vendor_label}/%{driver_name}/ddp
+DDP_PKG_DEST_PATH=%{buildroot}/lib/firmware/override/%{vendor_label}/%{driver_name}/ddp
 mkdir -p ${DDP_PKG_DEST_PATH}
 install -m 644 $(pwd)/ddp/%{driver_name}-*.pkg ${DDP_PKG_DEST_PATH}
 (cd ${DDP_PKG_DEST_PATH} && ln -sf %{driver_name}-*.pkg %{driver_name}.pkg)
@@ -62,9 +64,10 @@ install -m 644 $(pwd)/ddp/%{driver_name}-*.pkg ${DDP_PKG_DEST_PATH}
 
 %files
 /lib/modules/%{kernel_version}/*/*.ko
-/lib/firmware/updates/*
+/lib/firmware/override/*
 
 %changelog
 * Mon Aug 21 2023 Gael Duperrey <gduperrey@vates.fr> - 1.8.8-1
 - initial package, version 1.8.8
 - Synced from XS driver SRPM intel-ice-1.8.8-1.el7.centos.src.rpm
+- change firmware to live in /lib/firmware/override
