@@ -14,14 +14,17 @@
 
 Summary: %{vendor_name} %{driver_name} device drivers
 Name: %{vendor_label}-%{driver_name}-alt
-Version: 1.8.8
+Version: 1.11.17.1
 Release: 1%{?dist}
 License: GPLv2
 
 # Extracted from latest XS driver disk
-Source0: intel-ice-1.8.8.tar.gz
+Source0: intel-ice-1.11.17.1.tar.gz
+Patch0: fix-enabling-sr-iov-with-xen.patch
+Patch1: 0001-CP-47698-Change-module-name-intel_auxiliary-to-intel.patch
 
-Patch1: 0001-Look-for-firmware-in-lib-firmware-override.patch
+# XCP-ng patches
+Patch1000: 0001-Look-for-firmware-in-lib-firmware-override.patch
 
 BuildRequires: gcc
 BuildRequires: kernel-devel
@@ -41,7 +44,7 @@ version %{kernel_version}.
 %{make_build} -C /lib/modules/%{kernel_version}/build M=$(pwd)/src KSRC=/lib/modules/%{kernel_version}/build NEED_AUX_BUS=2 modules
 
 %install
-%{__make} %{?_smp_mflags} -C /lib/modules/%{kernel_version}/build M=$(pwd)/src INSTALL_MOD_PATH=%{buildroot} INSTALL_MOD_DIR=%{module_dir} DEPMOD=/bin/true modules_install
+%{__make} %{?_smp_mflags} -C /lib/modules/%{kernel_version}/build M=$(pwd)/src INSTALL_MOD_PATH=%{buildroot} INSTALL_MOD_DIR=%{module_dir} DEPMOD=/bin/true NEED_AUX_BUS=2 modules_install
 
 # mark modules executable so that strip-to-file can strip them
 find %{buildroot}/lib/modules/%{kernel_version} -name "*.ko" -type f | xargs chmod u+x
@@ -67,6 +70,10 @@ install -m 644 $(pwd)/ddp/%{driver_name}-*.pkg ${DDP_PKG_DEST_PATH}
 /lib/firmware/override/*
 
 %changelog
+* Tue Apr 30 2024 Gael Duperrey <gduperrey@vates.tech> - 1.11.17.1-1
+- Update to version 1.11.17.1
+- Synced from XS driver SRPM intel-ice-1.11.17.1-4.xs8~2_1.src.rpm
+
 * Mon Aug 21 2023 Gael Duperrey <gduperrey@vates.fr> - 1.8.8-1
 - initial package, version 1.8.8
 - Synced from XS driver SRPM intel-ice-1.8.8-1.el7.centos.src.rpm

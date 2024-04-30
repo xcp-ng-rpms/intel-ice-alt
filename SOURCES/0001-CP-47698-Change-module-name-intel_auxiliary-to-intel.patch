@@ -1,0 +1,104 @@
+From 60470b855d082acc9c094ecef61671e58cd94492 Mon Sep 17 00:00:00 2001
+From: Stephen Cheng <stephen.cheng@cloud.com>
+Date: Mon, 4 Mar 2024 04:30:42 +0000
+Subject: [PATCH] CP-47698: Change module name "intel_auxiliary" to
+ "intel_ice_auxiliary"
+
+Both intel-i40e and intel-ice generated `intel_auxiliary.ko`.
+The conflict was resolved in rt-next(XS8) by adding `auxiliary.ko`
+to the kernel, and re-build i40e and ice without auxiliary.ko.
+However, the conflict still exists in Yangtze.
+To solve this, change the module name to `intel_ice_auxiliary` in
+intel_ice driver.
+
+Signed-off-by: Stephen Cheng <stephen.cheng@cloud.com>
+---
+ src/Makefile              | 4 ++--
+ src/Module.supported      | 2 +-
+ src/auxiliary.c           | 2 +-
+ src/common.mk             | 8 ++++----
+ src/linux/auxiliary_bus.h | 4 ++--
+ 5 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/src/Makefile b/src/Makefile
+index 5f29380..1f20da8 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -116,8 +116,8 @@ endif
+ 
+ 
+ ifeq (${NEED_AUX_BUS},2)
+-intel_auxiliary-objs := auxiliary.o
+-obj-m += intel_auxiliary.o
++intel_ice_auxiliary-objs := auxiliary.o
++obj-m += intel_ice_auxiliary.o
+ endif
+ 
+ else	# ifneq($(KERNELRELEASE),)
+diff --git a/src/Module.supported b/src/Module.supported
+index 7d8605d..7679217 100644
+--- a/src/Module.supported
++++ b/src/Module.supported
+@@ -1,2 +1,2 @@
+ ice.ko external
+-intel_auxiliary.ko external
++intel_ice_auxiliary.ko external
+diff --git a/src/auxiliary.c b/src/auxiliary.c
+index 2ea1803..2e08b67 100644
+--- a/src/auxiliary.c
++++ b/src/auxiliary.c
+@@ -106,7 +106,7 @@ static void auxiliary_bus_shutdown(struct device *dev)
+ }
+ 
+ static struct bus_type auxiliary_bus_type = {
+-	.name = "intel_auxiliary",
++	.name = "intel_ice_auxiliary",
+ 	.probe = auxiliary_bus_probe,
+ 	.remove = auxiliary_bus_remove,
+ 	.shutdown = auxiliary_bus_shutdown,
+diff --git a/src/common.mk b/src/common.mk
+index df5e4fd..05b0e7f 100644
+--- a/src/common.mk
++++ b/src/common.mk
+@@ -434,9 +434,9 @@ export INSTALL_AUX_DIR ?= updates/drivers/net/ethernet/intel/auxiliary
+ AUX_BUS_HEADER ?= linux/auxiliary_bus.h
+ ifeq (${NEED_AUX_BUS},2)
+ define auxiliary_post_install
+-	install -D -m 644 Module.symvers ${INSTALL_MOD_PATH}/lib/modules/${KVER}/extern-symvers/intel_auxiliary.symvers
++	install -D -m 644 Module.symvers ${INSTALL_MOD_PATH}/lib/modules/${KVER}/extern-symvers/intel_ice_auxiliary.symvers
+ 	install -d ${INSTALL_MOD_PATH}/lib/modules/${KVER}/${INSTALL_AUX_DIR}
+-	mv -f ${INSTALL_MOD_PATH}/lib/modules/${KVER}/${INSTALL_MOD_DIR}/intel_auxiliary.ko* \
++	mv -f ${INSTALL_MOD_PATH}/lib/modules/${KVER}/${INSTALL_MOD_DIR}/intel_ice_auxiliary.ko* \
+ 	      ${INSTALL_MOD_PATH}/lib/modules/${KVER}/${INSTALL_AUX_DIR}/
+ 	install -D -m 644 ${AUX_BUS_HEADER} ${INSTALL_MOD_PATH}/${KSRC}/include/linux/auxiliary_bus.h
+ endef
+@@ -446,8 +446,8 @@ endif
+ 
+ ifeq (${NEED_AUX_BUS},2)
+ define auxiliary_post_uninstall
+-	rm -f ${INSTALL_MOD_PATH}/lib/modules/${KVER}/extern-symvers/intel_auxiliary.symvers
+-	rm -f ${INSTALL_MOD_PATH}/lib/modules/${KVER}/${INSTALL_AUX_DIR}/intel_auxiliary.ko
++	rm -f ${INSTALL_MOD_PATH}/lib/modules/${KVER}/extern-symvers/intel_ice_auxiliary.symvers
++	rm -f ${INSTALL_MOD_PATH}/lib/modules/${KVER}/${INSTALL_AUX_DIR}/intel_ice_auxiliary.ko
+ 	rm -f ${INSTALL_MOD_PATH}/${KSRC}/include/linux/auxiliary_bus.h
+ endef
+ else
+diff --git a/src/linux/auxiliary_bus.h b/src/linux/auxiliary_bus.h
+index eeff0e6..7f21f69 100644
+--- a/src/linux/auxiliary_bus.h
++++ b/src/linux/auxiliary_bus.h
+@@ -13,9 +13,9 @@
+ #include <linux/mod_devicetable.h>
+ 
+ #define AUXILIARY_NAME_SIZE 38
+-#define AUXILIARY_MODULE_PREFIX "intel_auxiliary:"
++#define AUXILIARY_MODULE_PREFIX "intel_ice_auxiliary:"
+ 
+-#define AUX_PREFIX(func) intel_ ## func
++#define AUX_PREFIX(func) intel_ice_ ## func
+ 
+ #define auxiliary_device_init AUX_PREFIX(auxiliary_device_init)
+ #define __auxiliary_device_add AUX_PREFIX(__auxiliary_device_add)
+-- 
+2.41.0
+
