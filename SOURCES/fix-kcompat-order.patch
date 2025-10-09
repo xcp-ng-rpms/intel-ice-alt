@@ -1,0 +1,61 @@
+Fix kcompat include order
+
+The kcompat_generated_defs.h needs to be included before using HAVE_* and
+various other kcompat_*.h headers need to be included earlier, before inclusion
+of their Linux counterpart.
+
+Signed-off-by: Ross Lagerwall <ross.lagerwall@citrix.com>
+diff --git a/src/kcompat.h b/src/kcompat.h
+index 2124a7157d31..e1dd48fa150d 100644
+--- a/src/kcompat.h
++++ b/src/kcompat.h
+@@ -4,6 +4,14 @@
+ #ifndef _KCOMPAT_H_
+ #define _KCOMPAT_H_
+ 
++#include "kcompat_generated_defs.h"
++
++#include "kcompat_overflow.h"
++
++#ifndef HAVE_XARRAY_API
++#include "kcompat_xarray.h"
++#endif /* !HAVE_XARRAY_API */
++
+ #ifndef LINUX_VERSION_CODE
+ #include <linux/version.h>
+ #else
+@@ -12,10 +20,6 @@
+ 
+ #include "kcompat_gcc.h"
+ 
+-#ifndef HAVE_XARRAY_API
+-#include "kcompat_xarray.h"
+-#endif /* !HAVE_XARRAY_API */
+-
+ #include <linux/io.h>
+ #include <linux/delay.h>
+ #include <linux/errno.h>
+diff --git a/src/kcompat_defs.h b/src/kcompat_defs.h
+index 44d2b227040e..18d43a5b7ee4 100644
+--- a/src/kcompat_defs.h
++++ b/src/kcompat_defs.h
+@@ -34,6 +34,4 @@
+ #include "kcompat_rhel_defs.h"
+ #endif
+ 
+-#include "kcompat_generated_defs.h"
+-
+ #endif /* _KCOMPAT_DEFS_H_ */
+diff --git a/src/kcompat_gcc.h b/src/kcompat_gcc.h
+index 8495bc3259da..0433fc0d96df 100644
+--- a/src/kcompat_gcc.h
++++ b/src/kcompat_gcc.h
+@@ -39,8 +39,6 @@
+ #endif
+ #endif /* GCC_VERSION >= 50100 */
+ 
+-#include "kcompat_overflow.h"
+-
+ /* Backport macros for controlling GCC diagnostics */
+ #if ( LINUX_VERSION_CODE < KERNEL_VERSION(4,18,0) )
+ /* Compilers before gcc-4.6 do not understand "#pragma GCC diagnostic push" */
