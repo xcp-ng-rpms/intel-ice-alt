@@ -15,7 +15,7 @@
 Summary: %{vendor_name} %{driver_name} device drivers
 Name: %{vendor_label}-%{driver_name}-alt
 Version: 1.17.2
-Release: 1%{?dist}
+Release: 1.0.ysu1.1%{?dist}
 License: GPLv2
 
 # Extracted from latest XS intel-ice package update
