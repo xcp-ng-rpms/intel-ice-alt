@@ -1,0 +1,67 @@
+From a70db199883f82a38ebc5b7773c38fc5e1d16106 Mon Sep 17 00:00:00 2001
+From: Stephen Cheng <stephen.cheng@cloud.com>
+Date: Wed, 25 Dec 2024 04:59:24 +0000
+Subject: [PATCH] Fix enabling SR-IOV with Xen
+
+When the PCI functions are created, Xen is informed about them and caches the
+number of MSI-X entries each function has. However, the number of MSI-X entries
+is not set until after the hardware has been configured and the VFs have been
+started. This prevents PCI-passthrough from working because Xen rejects mapping
+MSI-X interrupts to domains because it thinks the MSI-X interrupts don't exist.
+
+Fix this by moving the call to pci_enable_sriov() later so that the number of
+MSI-X entries is set correctly in hardware by the time Xen reads it.
+
+Signed-off-by: Ross Lagerwall <ross.lagerwall@citrix.com>
+---
+ src/ice_sriov.c | 16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
+
+diff --git a/src/ice_sriov.c b/src/ice_sriov.c
+index 5863c8d..37ed298 100644
+--- a/src/ice_sriov.c
++++ b/src/ice_sriov.c
+@@ -1035,17 +1035,11 @@ static int ice_ena_vfs(struct ice_pf *pf, u16 num_vfs)
+ 		goto err_unroll_tracker;
+ 	}
+ 
+-	ret = pci_enable_sriov(pf->pdev, num_vfs);
+-	if (ret) {
+-		dev_err(dev, "Cannot enable SRIO-V, err %d\n", ret);
+-		goto err_unroll_tracker;
+-	}
+-
+ 	ret = ice_create_vf_entries(pf, num_vfs);
+ 	if (ret) {
+ 		dev_err(dev, "Failed to allocate VF entries for %d VFs\n",
+ 			num_vfs);
+-		goto err_unroll_sriov;
++		goto err_unroll_tracker;
+ 	}
+ 
+ 	ret = ice_start_vfs(pf);
+@@ -1055,6 +1049,12 @@ static int ice_ena_vfs(struct ice_pf *pf, u16 num_vfs)
+ 		goto err_unroll_vf_entries;
+ 	}
+ 
++	ret = pci_enable_sriov(pf->pdev, num_vfs);
++	if (ret) {
++		dev_err(dev, "Cannot enable SRIO-V, err %d\n", ret);
++		goto err_unroll_vf_entries;
++	}
++
+ 	clear_bit(ICE_VF_DIS, pf->state);
+ 
+ 	/* rearm global interrupts */
+@@ -1067,8 +1067,6 @@ static int ice_ena_vfs(struct ice_pf *pf, u16 num_vfs)
+ 
+ err_unroll_vf_entries:
+ 	ice_free_vf_entries(pf);
+-err_unroll_sriov:
+-	pci_disable_sriov(pf->pdev);
+ err_unroll_tracker:
+ 	mutex_unlock(&pf->vfs.table_lock);
+ 	kfree(pf->vf_irq_tracker);
+-- 
+2.47.0
+
