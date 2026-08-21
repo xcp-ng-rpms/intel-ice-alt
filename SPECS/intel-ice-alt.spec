@@ -26,6 +26,7 @@ Patch1: fix-kcompat-order.patch
 
 # XCP-ng patches
 Patch1000: 0001-Look-for-firmware-in-lib-firmware-override.patch
+Patch1001: 0001-intel-ice-compat-handle-newer-kernels-with-dd_key_in.patch
 
 BuildRequires: gcc
 BuildRequires: kernel-devel
