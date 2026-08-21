@@ -15,7 +15,10 @@
 Summary: %{vendor_name} %{driver_name} device drivers
 Name: %{vendor_label}-%{driver_name}-alt
 Version: 1.17.2
-Release: 1%{?dist}
+Release: 2%{?dist}
+# Built against new kABI after cip rebase
+Requires: xcpng-kernel-kabi = 4.19.325-cip134+
+
 License: GPLv2
 
 # Extracted from latest XS intel-ice package update
@@ -72,6 +75,9 @@ install -m 644 $(pwd)/ddp/%{driver_name}-*.pkg ${DDP_PKG_DEST_PATH}
 /lib/firmware/override/*
 
 %changelog
+* Mon Aug 31 2026 Quentin Casasnovas <quentin.casasnovas@vates.tech> - 1.17.2-2
+- Rebuild for kernel v4.19.325-cip134
+
 * Thu Oct 09 2025 Yann Sionneau <yann.sionneau@vates.tech> - 1.17.2-1
 - Update driver to v1.17.2
 - Synced from XS driver SRPM intel-ice-1.17.2-1.xs8.src.rpm
