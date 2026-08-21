@@ -15,7 +15,7 @@
 Summary: %{vendor_name} %{driver_name} device drivers
 Name: %{vendor_label}-%{driver_name}-alt
 Version: 1.17.2
-Release: 1%{?dist}
+Release: 1.0.kernelpreview.1%{?dist}
 License: GPLv2
 
 # Extracted from latest XS intel-ice package update
@@ -29,7 +29,7 @@ Patch1000: 0001-Look-for-firmware-in-lib-firmware-override.patch
 Patch1001: intel-ice-compat-handle-newer-kernels-with-dd_key_in.patch
 
 BuildRequires: gcc
-BuildRequires: kernel-devel
+BuildRequires: kernel-devel >= 4.19.325-cip137.8.0.46.16
 Provides: vendor-driver
 Requires: kernel-uname-r = %{kernel_version}
 Requires(post): /usr/sbin/depmod
@@ -72,6 +72,9 @@ install -m 644 $(pwd)/ddp/%{driver_name}-*.pkg ${DDP_PKG_DEST_PATH}
 /lib/firmware/override/*
 
 %changelog
+* Mon Nov 16 2026 Quentin Casasnovas <quentin.casasnovas@vates.tech> - 1.17.2-1.0.kernelpreview.1
+- Rebuild for kernel v4.19.325-cip137
+
 * Thu Oct 09 2025 Yann Sionneau <yann.sionneau@vates.tech> - 1.17.2-1
 - Update driver to v1.17.2
 - Synced from XS driver SRPM intel-ice-1.17.2-1.xs8.src.rpm
